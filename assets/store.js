@@ -157,7 +157,7 @@
   function normaliseProduct(item){
     if(!item||typeof item!=='object')return null;
     const title=clean(item.title).slice(0,70);
-    const description=clean(item.description).slice(0,220);
+    const description=clean(item.description).slice(0,1200);
     const price=Number(item.price);
     const type=Object.prototype.hasOwnProperty.call(TYPE_LABELS,item.type)?item.type:'app';
     if(!title||!Number.isFinite(price)||price<=0||price>10000)return null;
@@ -604,12 +604,12 @@
     $('catalog').innerHTML=result.length?result.map(item=>{
       const artwork=artworkForProduct(item);
       return `
-      <article class="product"><button class="product-main" type="button" data-buy="${esc(item.id)}" aria-label="Ver ${esc(item.title)} y ${item.mode==='contact'?'consultar':'comprar acceso'}">
+      <article class="product"><button class="product-main product-image-button" type="button" data-gallery="${esc(item.id)}" aria-label="Ver imágenes de ${esc(item.title)}">
         <span class="cover ${esc(item.tone)}${artwork?' has-catalog-artwork':''}">${artwork?`<img class="catalog-artwork catalog-artwork-${artwork.source}" src="${artwork.path}" alt="" loading="lazy" decoding="async">${CATALOG_SECONDARY_ARTWORK[artwork.source]?`<img class="catalog-preview-image catalog-preview-${artwork.source}" data-catalog-preview src="${CATALOG_SECONDARY_ARTWORK[artwork.source]}" alt="" loading="lazy" decoding="async" aria-hidden="true">`:''}${CATALOG_PREVIEW_VIDEOS[artwork.source]?`<video class="catalog-preview-video${artwork.source==='instagram'?' catalog-preview-portrait':''}" data-catalog-preview data-src="${CATALOG_PREVIEW_VIDEOS[artwork.source]}" preload="none" muted playsinline loop disablepictureinpicture aria-hidden="true"></video>`:''}`:''}<span class="product-tag">${esc(categoryTitle(item))}</span>${item.discount?`<span class="sale-badge">${discountText(item)}</span>`:''}${artwork?'':`<span class="cover-art"><span>${esc(item.mark)}</span></span>`}</span>
-        <span class="product-body"><span class="product-title">${esc(item.title)}</span><span class="product-desc">${esc(item.description)}</span>
-          <span class="product-foot"><span><span class="price-label">${item.discount?'Precio de oferta':'Precio'}</span>${item.discount?`<span class="old-price">${money(item.price)}</span>`:''}<span class="price" style="display:block">${money(discountedPrice(item))}</span></span><span class="buy-action">${item.mode==='contact'?'Consultar ↗':'Comprar ↗'}</span></span>
-        </span>
-      </button>${engagementMarkup(item)}${reviewCardMarkup(item.id)}</article>`;
+      </button><div class="product-body"><span class="product-title">${esc(item.title)}</span><span class="product-desc">${esc(item.description)}</span>
+        <button class="product-details-button" type="button" data-details="${esc(item.id)}" aria-label="Ver descripción completa de ${esc(item.title)}">Ver detalles <span aria-hidden="true">↗</span></button>
+        <div class="product-foot"><span><span class="price-label">${item.discount?'Precio de oferta':'Precio'}</span>${item.discount?`<span class="old-price">${money(item.price)}</span>`:''}<span class="price" style="display:block">${money(discountedPrice(item))}</span></span><button class="buy-action product-buy-button" type="button" data-buy="${esc(item.id)}">${item.mode==='contact'?'Consultar ↗':'Comprar ↗'}</button></div>
+      </div>${engagementMarkup(item)}${reviewCardMarkup(item.id)}</article>`;
     }).join(''):`<div class="empty">${publicProducts.length?'No encontramos apps o servicios con ese nombre.':'Pronto encontrarás aquí nuestras aplicaciones y servicios disponibles.'}</div>`;
     prepareCatalogPreviews();
   }
@@ -620,6 +620,24 @@
     if(CATALOG_SECONDARY_ARTWORK[artwork.source])slides.push({type:'image',src:CATALOG_SECONDARY_ARTWORK[artwork.source]});
     if(CATALOG_PREVIEW_VIDEOS[artwork.source])slides.push({type:'video',src:CATALOG_PREVIEW_VIDEOS[artwork.source]});
     return slides;
+  }
+  function openProductDetails(productId){
+    const item=products.find(product=>product.id===productId);
+    if(!item||!isPublicProduct(item))return;
+    const artwork=artworkForProduct(item);
+    const hasGallery=productGallerySlides(item).length>0;
+    view='product-details';fullScreen();heading('SONYER STORE · INFORMACIÓN','Detalles del producto');
+    body.innerHTML=`<div class="product-details-screen">
+      <div class="details-product-hero ${esc(item.tone)}">${artwork?`<img src="${esc(artwork.path)}" alt="Imagen de ${esc(item.title)}" loading="eager">`:`<div class="details-product-placeholder">${esc(item.mark)}</div>`}</div>
+      <div class="details-product-content"><span class="details-product-category">${esc(categoryTitle(item))}</span><h3>${esc(item.title)}</h3>
+        <div class="details-description-card"><h4>Descripción completa</h4><p>${esc(item.description||'Consulta los detalles disponibles de este producto con SONYER.')}</p></div>
+        <div class="details-price-row"><div><small>${item.discount?'Precio con descuento':'Precio'}</small><strong>${money(discountedPrice(item))}</strong></div>${item.discount?`<span class="details-discount"><del>${money(item.price)}</del> ${discountText(item)}</span>`:''}</div>
+        <div class="details-actions">${hasGallery?'<button id="detailsShowGallery" class="secondary" type="button">⤢ Ver fotos</button>':''}<button id="detailsContinue" class="primary" type="button">${item.mode==='contact'?'Consultar servicio ↗':'Comprar ahora ↗'}</button></div>
+        <p class="details-safe-note">Puedes leer esta información antes de continuar. Tu compra o consulta no se enviará hasta que completes los siguientes pasos.</p>
+      </div></div>`;
+    $('detailsShowGallery')?.addEventListener('click',()=>openProductGallery(item.id));
+    $('detailsContinue').addEventListener('click',()=>{closeModal();beginPurchase(item.id)});
+    openModal();
   }
   function openProductGallery(productId,initialIndex=0){
     const item=products.find(product=>product.id===productId);
@@ -633,7 +651,7 @@
       <div id="galleryStage" class="gallery-stage" role="region" aria-label="Vista ampliada de ${esc(item.title)}"></div>
       <div class="gallery-controls"><button class="gallery-nav" id="galleryPrevious" type="button" aria-label="Ver foto anterior">‹</button><span id="galleryCount" class="gallery-count" aria-live="polite"></span><button class="gallery-nav" id="galleryNext" type="button" aria-label="Ver foto siguiente">›</button></div>
       <p class="gallery-hint">Desliza hacia los lados para ver más imágenes. Cierra con la ✕ superior.</p>
-      <button id="galleryGoToProduct" type="button" class="primary gallery-action">${item.mode==='contact'?'Consultar este servicio ↗':'Ver detalles y comprar ↗'}</button>
+      <button id="galleryGoToProduct" type="button" class="primary gallery-action">Ver descripción y precio ↗</button>
     </div>`;
     const stage=$('galleryStage');
     const renderSlide=()=>{
@@ -648,7 +666,7 @@
     const move=increment=>{selected=Math.max(0,Math.min(slides.length-1,selected+increment));renderSlide()};
     $('galleryPrevious').addEventListener('click',()=>move(-1));
     $('galleryNext').addEventListener('click',()=>move(1));
-    $('galleryGoToProduct').addEventListener('click',()=>{closeModal();beginPurchase(item.id)});
+    $('galleryGoToProduct').addEventListener('click',()=>openProductDetails(item.id));
     let startX=null;
     stage.addEventListener('touchstart',event=>{startX=event.changedTouches[0]?.clientX??null},{passive:true});
     stage.addEventListener('touchend',event=>{
@@ -1226,7 +1244,7 @@
     body.innerHTML=`<div class="admin-banner">El servicio se guardará en Firebase. Puedes mostrarlo a los clientes cuando esté configurado o mantenerlo oculto hasta terminar.</div>
       <form id="productForm"><div class="form-grid">
         <div class="field wide"><label for="productTitle">Nombre del producto o servicio</label><input id="productTitle" name="title" value="${esc(item?.title||'')}" placeholder="Ej. Diseño de flyers" maxlength="70" required></div>
-        <div class="field wide"><label for="productDescription">Descripción</label><textarea id="productDescription" name="description" maxlength="220" placeholder="Qué ofrece este producto o servicio">${esc(item?.description||'')}</textarea></div>
+        <div class="field wide"><label for="productDescription">Descripción completa</label><textarea id="productDescription" name="description" rows="5" maxlength="1200" placeholder="Explica qué incluye el producto, sus características y condiciones">${esc(item?.description||'')}</textarea><small class="field-help">La tienda mostrará un resumen y los clientes podrán tocar «Ver detalles» para leerla completa (hasta 1200 caracteres).</small></div>
         <div class="field"><label for="productType">Categoría</label><select id="productType" name="type">${Object.entries(TYPE_LABELS).map(([key,label])=>`<option value="${key}" ${(!item&&key==='app')||item?.type===key?'selected':''}>${label}</option>`).join('')}</select></div>
         <div class="field wide"><label for="productCategory">O escribe una categoría personalizada (opcional)</label><input id="productCategory" name="category" type="text" placeholder="Ej. Seguidores, Streaming, Inteligencia artificial" maxlength="40" value="${esc(item?.category||'')}"><small class="field-help">Puedes escribir y editar el nombre libremente. Si lo completas, aparecerá en la tarjeta del producto y como filtro en el catálogo.</small></div>
         <div class="field"><label for="productMode">Tipo de venta</label><select id="productMode" name="mode"><option value="access" ${!item||item.mode==='access'?'selected':''}>Comprar acceso con registro</option><option value="contact" ${item?.mode==='contact'?'selected':''}>Consultar por WhatsApp / Telegram</option></select></div>
@@ -1275,16 +1293,15 @@
   $('catalogSort').addEventListener('change',event=>{sortMode=event.target.value==='popular'?'popular':'normal';renderCatalog()});
   $('catalog').addEventListener('click',event=>{
     const heart=event.target.closest('[data-like]');if(heart){toggleProductLike(heart.dataset.like);return}
-    const card=event.target.closest('[data-buy]');
-    if(!card)return;
-    const image=event.target.closest('.cover.has-catalog-artwork');
-    if(image){openProductGallery(card.dataset.buy,image.querySelector('.catalog-preview-image.is-playing,.catalog-preview-video.is-playing')?1:0);return}
-    beginPurchase(card.dataset.buy);
+    const gallery=event.target.closest('[data-gallery]');
+    if(gallery){const image=gallery.querySelector('.cover.has-catalog-artwork');if(image){openProductGallery(gallery.dataset.gallery,image.querySelector('.catalog-preview-image.is-playing,.catalog-preview-video.is-playing')?1:0)}else openProductDetails(gallery.dataset.gallery);return}
+    const details=event.target.closest('[data-details]');if(details){openProductDetails(details.dataset.details);return}
+    const buy=event.target.closest('[data-buy]');if(buy)beginPurchase(buy.dataset.buy);
   });
   $('popularShowcase').addEventListener('click',event=>{
     const card=event.target.closest('[data-buy]');if(!card)return;
     if(event.target.closest('.popular-art.has-image'))openProductGallery(card.dataset.buy);
-    else beginPurchase(card.dataset.buy);
+    else openProductDetails(card.dataset.buy);
   });
   ['pointerdown','touchstart','wheel','keydown'].forEach(type=>$('popularShowcase').addEventListener(type,()=>{lastPopularInteraction=Date.now()},{passive:true}));
   setInterval(()=>{
