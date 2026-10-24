@@ -1,11 +1,21 @@
-SONYER STORE WEB FIX26 - IMAGEN PARA DESCANSO MEDICO
+SONYER STORE WEB FIX27 - VER DESCRIPCION COMPLETA
 ===================================================================
 
 ESTA ENTREGA CONTIENE LA WEB SONYER STORE
 Sube index.html y la carpeta assets juntos a Vercel/Netlify/Pages.
 La APK de PagoCheck es un proyecto separado, no incluido en este ZIP.
 
-NOVEDADES DE FIX26
+NOVEDADES DE FIX27
+- Se agrego "Ver detalles" a las tarjetas del catalogo. Ese boton
+  abre una pantalla organizada con la descripcion completa, precio,
+  enlace para ver fotos y el boton final de compra o consulta.
+- El comprador puede leer con calma sin abrir el registro por error.
+- En el panel administrador la descripcion admite hasta 1200 caracteres;
+  el catalogo solo muestra un adelanto de dos lineas.
+- La galeria permite ir a "Ver descripcion y precio" antes de comprar.
+- Se conservan los productos y descripciones publicados en Firebase.
+
+MEJORAS ANTERIORES (FIX26)
 - Se agrego una ilustracion original para el servicio "Orientacion sobre
   descanso medico", guardada por separado como WebP liviano.
 - La portada aparece automaticamente tambien en productos existentes

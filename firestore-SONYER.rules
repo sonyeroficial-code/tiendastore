@@ -1,0 +1,203 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // UID de tu cuenta propietaria (Firebase > Authentication > Users).
+    // NO se debe usar una contraseña, correo o API key como autorización.
+    function owner() {
+      return request.auth != null
+        && request.auth.uid == 'rPuIcSNugUV5YqwPAAKINUdL6MG3';
+    }
+
+    function priceRecord(productId) {
+      return /databases/$(database)/documents/sonyer_store_prices/$(productId);
+    }
+
+    function accountRecord(userDocId) {
+      return /databases/$(database)/documents/users/$(userDocId);
+    }
+
+    function appRecord(appCode) {
+      return /databases/$(database)/documents/sonyer_store_apps/$(appCode);
+    }
+
+    // Future apps follow a standard owner-published account format instead of
+    // being added to a hardcoded allowlist every time.
+    function standardAppLinked(a, u) {
+      return a.appCode.matches('^[A-Za-z0-9]{2,24}$')
+        && exists(appRecord(a.appCode))
+        && get(appRecord(a.appCode)).data.active == true
+        && get(appRecord(a.appCode)).data.kind == 'standard'
+        && get(appRecord(a.appCode)).data.code == a.appCode
+        && u.app == a.appCode
+        && u.appSource == get(appRecord(a.appCode)).data.source
+        && u.authUid == a.accountUid;
+    }
+
+    function linkedAccount() {
+      let a = request.resource.data;
+      let u = get(accountRecord(a.userDocId)).data;
+      return request.auth != null
+        && request.auth.uid == a.accountUid
+        && (a.userDocId == a.accountUid || u.authUid == a.accountUid)
+        && u.sellerId == a.sellerId
+        && u.loginUsername == a.loginUsername
+        && u.approved == false
+        && (
+          (a.appCode == 'Yape' && u.appSource == 'Yape')
+          || (a.appCode == 'BCP' && u.appName == 'BCP')
+          || (a.appCode == 'interbank' && u.appSource == 'interbank')
+          || standardAppLinked(a, u)
+        );
+    }
+
+    // La tienda publica descripciones y QR, pero solo el dueño los cambia.
+    match /sonyer_store_public/{document} {
+      allow read: if true;
+      allow create, update: if owner();
+      allow delete: if false;
+    }
+
+    // Precio autoritativo configurado por el administrador al publicar catálogo.
+    match /sonyer_store_prices/{productId} {
+      allow read: if true;
+      allow create, update: if owner();
+      allow delete: if false;
+    }
+
+    // Applications are registered by the owner when publishing the catalog.
+    // Buyers may read one definition, but cannot add or enable apps themselves.
+    match /sonyer_store_apps/{appCode} {
+      allow get: if true;
+      allow list: if owner();
+      allow create, update: if owner();
+      allow delete: if false;
+    }
+
+    match /sonyer_store_orders/{orderId} {
+      // El cliente conoce el ID aleatorio del pedido, y puede observar SU estado.
+      // No puede consultar la lista completa de otros pedidos.
+      allow get: if true;
+      allow list: if owner();
+
+      allow create: if orderId.matches('^order-[a-z0-9-]{14,80}$')
+        && request.resource.data.keys().hasAll([
+          'productId', 'productTitle', 'amount', 'payerName', 'currency',
+          'status', 'source', 'createdAt','accountUid','userDocId',
+          'appCode','sellerId','loginUsername'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'productId', 'productTitle', 'amount', 'payerName', 'currency',
+          'status', 'source', 'createdAt','accountUid','userDocId',
+          'appCode','sellerId','loginUsername'
+        ])
+        && request.auth != null
+        && request.resource.data.accountUid is string
+        && request.resource.data.accountUid == request.auth.uid
+        && request.resource.data.userDocId is string
+        && request.resource.data.userDocId.matches('^[A-Za-z0-9_-]{2,128}$')
+        && request.resource.data.appCode is string
+        && request.resource.data.appCode.matches('^[A-Za-z0-9]{2,24}$')
+        && request.resource.data.sellerId is string
+        && request.resource.data.sellerId.matches('^[A-Z0-9_-]{2,32}$')
+        && request.resource.data.loginUsername is string
+        && request.resource.data.loginUsername.matches('^[a-z0-9._-]{3,35}$')
+        && request.resource.data.productId is string
+        && request.resource.data.productId.size() > 0
+        && request.resource.data.productId.size() <= 50
+        && request.resource.data.productTitle is string
+        && request.resource.data.productTitle.size() <= 70
+        && request.resource.data.payerName is string
+        && request.resource.data.payerName.size() >= 5
+        && request.resource.data.payerName.size() <= 100
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 0
+        && request.resource.data.amount <= 10000
+        && request.resource.data.currency == 'PEN'
+        && request.resource.data.status == 'pending'
+        && request.resource.data.source == 'sonyer-store-web'
+        && request.resource.data.createdAt == request.time
+        && exists(priceRecord(request.resource.data.productId))
+        && get(priceRecord(request.resource.data.productId)).data.active == true
+        && get(priceRecord(request.resource.data.productId)).data.price
+             == request.resource.data.amount
+        && get(priceRecord(request.resource.data.productId)).data.appCode
+             == request.resource.data.appCode
+        && linkedAccount();
+
+      // SOLO la sesión Firebase del dueño (en la APK) puede autorizar.
+      allow update: if owner()
+        && resource.data.status == 'pending'
+        && request.resource.data.status == 'approved'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status', 'approvedAt', 'paymentSource', 'matchedAmountCents',
+          'matchedPayer', 'paymentFingerprint','accountApproved'
+        ])
+        && request.resource.data.accountApproved == true
+        && request.resource.data.approvedAt is timestamp
+        && request.resource.data.paymentSource == 'moni-notification'
+        && request.resource.data.matchedAmountCents is int
+        && request.resource.data.matchedAmountCents ==
+             (resource.data.amount * 100)
+        && request.resource.data.matchedPayer is string
+        && request.resource.data.paymentFingerprint is string;
+      allow delete: if false;
+    }
+
+    // Un identificador por aviso MONI evita reutilizarlo en varios pedidos.
+    match /sonyer_store_claims/{fingerprint} {
+      allow read: if owner();
+      allow create: if owner()
+        && request.resource.data.keys().hasOnly(['orderId','createdAt'])
+        && request.resource.data.orderId is string
+        && request.resource.data.createdAt is timestamp;
+      allow update, delete: if false;
+    }
+
+    // Reacciones y visualizaciones únicas. Cada identidad Firebase solo
+    // puede crear su propio registro; el público solo modifica su corazón.
+    match /sonyer_store_engagement/{productId}/likes/{visitorUid} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.auth.uid == visitorUid
+        && productId.matches('^[A-Za-z0-9_-]{1,50}$')
+        && request.resource.data.keys().hasOnly(['liked','createdAt','updatedAt'])
+        && request.resource.data.keys().hasAll(['liked','createdAt','updatedAt'])
+        && request.resource.data.liked == true
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+      allow update: if request.auth != null
+        && request.auth.uid == visitorUid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['liked','updatedAt'])
+        && request.resource.data.liked is bool
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
+    match /sonyer_store_engagement/{productId}/views/{visitorUid} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.auth.uid == visitorUid
+        && productId.matches('^[A-Za-z0-9_-]{1,50}$')
+        && request.resource.data.keys().hasOnly(['viewedAt'])
+        && request.resource.data.keys().hasAll(['viewedAt'])
+        && request.resource.data.viewedAt == request.time;
+      allow update, delete: if false;
+    }
+
+    // Compatibilidad con las demás apps del proyecto login-48d79:
+    // conservan el MISMO nivel de acceso que tus reglas anteriores.
+    // IMPORTANTE: esas colecciones SIGUEN siendo públicas e inseguras;
+    // hay que protegerlas individualmente antes de usarlas con datos privados.
+    match /{collection}/{document=**} {
+      allow read, create, update: if collection != 'sonyer_store_orders'
+        && collection != 'sonyer_store_claims'
+        && collection != 'sonyer_store_engagement'
+        && collection != 'sonyer_store_public'
+        && collection != 'sonyer_store_prices'
+        && collection != 'sonyer_store_apps';
+      allow delete: if false;
+    }
+  }
+}
