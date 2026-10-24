@@ -1,0 +1,129 @@
+SONYER STORE - INTEGRACION DE CUENTAS Y PEDIDOS (PRUEBA)
+Proyecto Firebase existente: login-48d79
+UID de administrador: rPuIcSNugUV5YqwPAAKINUdL6MG3
+
+QUE HACE ESTA VERSION
+1. El cliente selecciona una app de destino: Yape, BCP, interbank, FREFIRE,
+   TIKTOK o cualquier nueva app que use el contrato SONYER estandar v1.
+2. Escribe su ID vendedor (MAYUSCULAS), usuario (minusculas), correo y clave.
+3. La web comprueba el ID de vendedor en sellers/{ID} (active=true).
+4. Inicia sesion en la cuenta Firebase Authentication si ya existe y la clave
+   coincide; si no existe, crea una nueva cuenta pendiente en users/{UID}.
+   Yape tambien busca registros antiguos con un ID aleatorio en Firestore.
+5. Genera un pedido en sonyer_store_orders VINCULADO al UID y al documento
+   real de ese usuario. El pedido nunca guarda la contrasena.
+6. Cuando la APK del DUENO detecta un aviso de MONI compatible con un unico
+   pedido, intenta actualizar pedido + cuenta + marca antirrepeticion en una
+   sola operacion atomica. La web solo muestra aprobado si ambos se aprobaron.
+
+NUEVO FIX13 - CORAZONES Y VISITAS REALES
+1. Firebase Console > Authentication > Sign-in method > Anonymous:
+   activa el proveedor ANONIMO. No desactives Correo/Contrasena.
+2. Firestore Database > Reglas: usa el archivo completo
+   firestore-SONYER.rules incluido en este ZIP. Copia las reglas completas,
+   revisalas y publicalas ANTES de subir la web nueva.
+   Conservaron las reglas de pedidos, cuentas y vendedores que ya tenias;
+   se agrego proteccion particular a sonyer_store_engagement.
+3. Sube todo este ZIP a tu hosting, incluido assets/firebase-store.js.
+4. Cada visitante puede dar un corazon por servicio, quitarlo o volver a
+   ponerlo. Las visitas representan visitantes unicos que abrieron el
+   detalle/compra del producto, NO impresiones de la tarjeta.
+5. El panel administrador muestra los conteos y la tienda permite ordenar
+   por popularidad. Los numeros empiezan en 0 y son reales; no se inventan.
+   Se refrescan al cargar y al interactuar; luego se comprueban periodicamente
+   con una cache de 3 minutos para reducir lecturas de Firebase.
+
+FIX14 - CORRECCION DE SERVICIOS QUE DESAPARECIAN
+1. Antes, "Guardar producto" solo actualizaba el almacenamiento de ESE
+   navegador; al volver a abrir la pagina, el catalogo anterior de Firebase
+   reemplazaba los cambios locales. Esa era la causa del fallo.
+2. Ahora "Guardar producto" crea o edita el producto directamente en Firestore
+   y sincroniza su precio para los pedidos. Tambien se guardan en Firebase
+   los cambios al eliminar productos, agregar ejemplos o restaurar el catalogo.
+3. Espera el mensaje "Servicio guardado y publicado" antes de cerrar la pagina.
+   Si falla la conexion, el formulario permanece abierto para reintentar;
+   NO se mostrara una confirmacion falsa de guardado.
+4. Debes iniciar sesion en el panel con la cuenta del DUENO. Sin esa sesion
+   no se pueden publicar productos. Esta version DINAMICA si requiere
+   actualizar las reglas para crear sonyer_store_apps.
+5. Los productos guardados solo en una version ANTERIOR y ya sobreescritos por
+   Firebase no se recuperan solos. Si el producto no aparece en el panel,
+   agregalo una vez mas con FIX14.
+
+NOTAS DE PRIVACIDAD / LIMITES DE ESTADISTICAS
+- Los visitantes reciben un identificador ANONIMO separado de sus cuentas
+  Yape/BCP/Interbank. No se guardan nombre, correo ni contrasena al dar like.
+- Si alguien borra los datos del navegador, puede recibir una identidad nueva;
+  por eso el limite de un corazon/visita por visitante no es antifraude absoluto.
+- Firestore debe aplicar las reglas del ZIP; las reglas anteriores dejan
+  abiertas las colecciones nuevas debido a su clausula de compatibilidad.
+- No se tocan ni borran documentos de usuarios ni pedidos existentes.
+- Una instalacion sin el proveedor Anonymous no podra registrar likes ni
+  visualizaciones nuevas. Se mantienen las compras existentes.
+
+CORRECCION FIX10: SI LA WEB DICE 'PEDIDO NO REGISTRADO'
+- Antes de enviar, comprueba que sonyer_store_prices/{productId} exista,
+  este activo y tenga appCode igual a la app comprada, y el precio exacto.
+- Si ese documento es viejo o no existe, el administrador debe entrar a
+  SONYER Store > Panel > Editar producto > Aplicacion de destino y Publicar.
+- Si Firebase deniega permisos, la web muestra 'permission-denied'; hay que
+  revisar las reglas de SONYER y su compatibilidad con las apps existentes.
+- La pagina tiene Reintentar sincronizacion para EL MISMO pedido. NO pagues
+  nuevamente. Si ya cerraste la pagina, conserva el ID de la captura anterior
+  y consulta a SONYER antes de enviar otra solicitud.
+
+LOS TRES FORMATOS NO SON IGUALES
+- Yape: username interno Yape_sonyer, appSource Yape, Auth con correo real.
+- BCP: username interno sonyer, appName BCP, appSource firebase. Auth con
+  correo interno del formato BCP (derivado de vendedor + usuario).
+- Interbank: username interno Interbank-sonyer, appSource interbank. Auth
+  con correo interno del formato Interbank (NO se usa el correo de Yape).
+  El correo ingresado para BCP/Interbank se conserva como recuperacion.
+
+APPS DINAMICAS (NUEVO)
+- FREFIRE: fuente frefire_sonyer, usuario frefire_sonyer,
+  Auth derivado del vendedor + usuario con APP_CODE FREFIRE.
+- TIKTOK: fuente tiktok, usuario tiktok_sonyer,
+  Auth derivado del vendedor + usuario con APP_CODE TIKTOK.
+- Las nuevas apps se registran en sonyer_store_apps/{CODIGO} al publicar
+  productos. Sus cuentas siguen el contrato estandar users/{authUid}:
+  app, appSource, sellerId, loginUsername, authUid, approved, approvalStatus.
+- PagoCheck consulta ese registro. NO es necesario agregar el nombre de cada
+  nueva app en las reglas o el Java de PagoCheck.
+- IMPORTANTE: una app nueva debe leer ese contrato de usuarios para reconocer
+  su acceso. Si usa otro algoritmo de autenticacion, necesita adaptar su
+  propio login una vez. Unicamente compartir Firebase no lo hace compatible.
+
+CONFIGURACION DE LA TIENDA (PRUEBA SIN COBROS REALES)
+1. En el panel SONYER, editar cada producto de acceso y poner el codigo de
+   la app: Yape, BCP, interbank, FREFIRE, TIKTOK o un codigo nuevo de letras
+   y numeros como NUEVAAPP. No hace falta editar el codigo de la tienda.
+2. Entrar con el administrador y pulsar Guardar producto. Esto publica el
+   producto y sus precios autoritativos al instante; no requiere otro boton.
+   "Sincronizar" en el panel tambien permite actualizar los datos de cobro.
+3. Publicar index.html y assets completos en Vercel/Netlify/Pages bajo HTTPS.
+4. Compilar e instalar la nueva APK PagoCheck Personal v1.4.0 (fuente aparte).
+5. En la APK iniciar sesion con la cuenta del dueno con UID indicado arriba,
+   activar acceso a notificaciones y permitir MONI. Probar con cuentas NUEVAS
+   y pagos simulados antes de considerar un uso real.
+
+IMPORTANTE SOBRE LAS REGLAS
+El archivo firestore-SONYER.rules es una integracion de PRUEBA, NO es apto
+para publicar cobros reales: aunque protege pedidos y precios nuevos,
+conserva las reglas ABIERTAS de users y sellers que tenian tus apps viejas.
+Eso deja documentos existentes accesibles y permite modificar aprobaciones
+sin un pago. Algunas apps viejas incluso guardan claves en texto legible.
+No pegues este archivo en un proyecto de produccion pensando que ya es seguro.
+Cambiar rules de users a solo-dueno de golpe TAMBIEN romperia los registros
+y consultas de las apps antiguas. Hay que migrar y probar Yape, BCP,
+Interbank y el panel de vendedores coordinadamente antes de cerrar accesos.
+
+ALCANCE DE DETECCION
+Los avisos del telefono se pueden falsificar o perder. MONI no proporciona
+en este codigo una confirmacion autorizada de fondos: la coincidencia se hace
+por nombre, monto y ventana temporal. NO uses esta version para entregar
+bienes o conceder acceso pagado en produccion sin validacion confiable del
+abono, integracion bancaria oficial y reglas de usuario seguras.
+
+No se modifico tu Firebase en linea ni se hizo un pago real. Estas son
+FUENTES para subir/compilar, no una web publicada ni una APK ya instalada.

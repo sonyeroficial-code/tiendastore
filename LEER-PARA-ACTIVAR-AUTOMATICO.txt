@@ -1,0 +1,88 @@
+SONYER STORE + PAGOCHECK PERSONAL · CONEXION AUTOMATICA CON EL MISMO FIREBASE
+Proyecto Firebase: login-48d79
+
+IMPORTANTE: LOS ARCHIVOS QUEDAN PREPARADOS, PERO NO ESTAN ACTIVADOS EN TU FIREBASE.
+No recibo acceso administrativo a tu cuenta para publicar reglas o crear usuarios.
+NO HAGAS PAGOS DE PRUEBA REALES HASTA TERMINAR TODA LA CONFIGURACION.
+
+1) EL DUEÑO DEBE TENER CUENTA EN FIREBASE AUTHENTICATION
+   Entra a Firebase Console > login-48d79 > Authentication.
+   Activa proveedor Correo/Contrasena si esta deshabilitado.
+   Verifica que TU cuenta en la lista de usuarios tenga este UID:
+   rPuIcSNugUV5YqwPAAKINUdL6MG3
+   No compartas tu contrasena.
+
+2) EL UID YA ESTA CONFIGURADO EN LOS DOS ARCHIVOS
+   - Sitio web: dist/assets/firebase-store.js
+   - Reglas: firestore-SONYER.rules
+   No necesitas editar el UID, salvo que hayas copiado otro usuario.
+
+3) REGLAS DE FIRESTORE (SOLO ENTORNO DE PRUEBAS)
+   NO reemplaces de inmediato las reglas de tu Firebase de produccion.
+   Para una base de PRUEBA, compara y publica las reglas
+   firestore-SONYER.rules tras revisar las apps y respaldar los documentos.
+   Se separan las colecciones SONYER para que solo el UID del dueño
+   pueda aprobar pedidos, cambiar precios y consumir avisos.
+
+   Tu regla anterior permitia que cualquiera cambiase TODOS los documentos.
+   La regla incluida mantiene el mismo acceso anterior para otras apps,
+   por compatibilidad. ESAS OTRAS APPS SIGUEN EXPUESTAS A TERCEROS:
+   cualquiera podria alterar users.approved o leer claves almacenadas.
+   Antes de cobrar de verdad se requiere una migracion de seguridad que
+   contemple Yape, BCP, Interbank, Free Fire, TikTok y sus paneles.
+
+4) PUBLICA EL CATALOGO Y LOS PRECIOS EN FIRESTORE
+   Sube el ZIP de la web a tu hosting o abrela desde HTTPS.
+   Presiona la S del encabezado e inicia sesion con TU cuenta Firebase.
+   En el panel, editar cada producto de acceso: Codigo de aplicacion debe
+   ser Yape, BCP, interbank, FREFIRE, TIKTOK o uno nuevo (ej. NUEVAAPP).
+   Guarda el producto. Asi se actualizan sonyer_store_public,
+   sonyer_store_prices y el registro sonyer_store_apps.
+   Sin precios publicados, las reglas bloquearan pedidos nuevos.
+
+5) EN LA APK PAGOCHECK PERSONAL
+   Compila el ZIP Android usando AndroidIDE / A-IDE con Java 8.
+   Abre la app, desbloquea con tu PIN y habilita el acceso a notificaciones.
+   En "Conectar aprobacion automatica", inicia sesion con la misma cuenta.
+   Puedes tocar "Copiar UID administrador" para comparar el valor con el
+   que escribiste en los dos archivos del paso 2.
+   Mantiene solo un refresh token cifrado en AndroidKeyStore.
+
+6) ASI SE APRUEBA AUTOMATICAMENTE
+   - Comprador ingresa ID de vendedor MAYUSCULAS, usuario minusculas, correo,
+     clave. La web primero crea o valida la cuenta real en Firebase Auth y
+     users. Si la cuenta ya esta aprobada, NO le cobra por otra cuenta.
+   - Pedido nuevo incluye accountUid y userDocId, ademas de la app de destino,
+     y se guarda en sonyer_store_orders como "pending".
+   - APK detecta notificacion entrante de la app oficial MONI.
+   - Compara EXACTAMENTE nombre (sin tildes/case), monto y +-30 minutos.
+   - SOLO si hay UN pedido compatible, la sesion del dueno intenta la
+     escritura atomica: cambia pedido.status a "approved", cambia
+     users/{userDocId}.approved a true y consume el aviso.
+   - La web escucha el pedido y muestra aprobado SOLO si accountApproved=true.
+   - Si hay dos pedidos ambiguos, NO aprueba ninguno automaticamente.
+   - Si el telefono esta desconectado o Android detiene el servicio, la
+     aprobacion espera hasta que vuelva a ejecutarse la sincronizacion.
+
+IMPORTANTE SOBRE LOS LIMITES
+   Detectar un aviso del telefono NO es comprobar una transaccion bancaria.
+   Una notificacion falsa, atrasada o repetida puede causar errores. Para
+   entregar productos de alto valor se recomienda una API oficial de pagos.
+
+   Los formatos de Yape, BCP, Interbank, Free Fire y TikTok quedan preparados
+   en el mismo proyecto. Para otras apps nuevas, hay que adoptar el formato
+   estandar de cuentas SONYER o adaptar el login de esa app. Esto NO es una
+   validacion completa en el sistema real sin pruebas de usuario. Se usa el
+   proyecto login-48d79. Esto NO es una integracion bancaria oficial. Sin
+   reglas seguras un atacante puede autoaprobarse por otra ruta: no entregar
+   acceso pagado de produccion con este prototipo.
+
+   El comprador no puede recuperar contrasenas privadas tras cerrar el
+   navegador: nunca se almacenan en la base publica.
+
+PRUEBAS DEL PROYECTO
+   - JavaScript comprobado con node --check y pruebas de las cinco apps y
+     altas de nuevas apps genericas.
+   - Se actualizo codigo fuente Android; no se compilo la APK completa
+     aqui por falta de Android SDK y compilador Java.
+   - No se probaron pagos reales ni se publicaron reglas/deploy.

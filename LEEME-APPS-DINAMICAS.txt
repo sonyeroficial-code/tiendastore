@@ -1,0 +1,192 @@
+SONYER STORE WEB FIX26 - IMAGEN PARA DESCANSO MEDICO
+===================================================================
+
+ESTA ENTREGA CONTIENE LA WEB SONYER STORE
+Sube index.html y la carpeta assets juntos a Vercel/Netlify/Pages.
+La APK de PagoCheck es un proyecto separado, no incluido en este ZIP.
+
+NOVEDADES DE FIX26
+- Se agrego una ilustracion original para el servicio "Orientacion sobre
+  descanso medico", guardada por separado como WebP liviano.
+- La portada aparece automaticamente tambien en productos existentes
+  con el mismo nombre o ID, siempre que sigan publicados.
+- La imagen es informativa: no incluye datos personales ni simula
+  documentos oficiales o aprobaciones medicas.
+- El boton "Ver fotos" abre tambien la portada nueva a pantalla completa.
+- Se mantiene sin cambios el login, los pagos y las reglas de Firebase.
+
+MEJORAS ANTERIORES (FIX25)
+- TikTok ahora muestra primero su imagen anterior y luego la captura
+  de monedas TikTok enviada por el usuario (incluye marca de simulacion).
+- Free Fire primero muestra la imagen anterior y despues la nueva
+  captura de la tienda de recargas.
+- Al tocar la FOTO de un producto se abre una galeria de pantalla completa
+  con imagenes en orden, botones anterior/siguiente y desplazamiento tactil.
+  Cuando hay video (Netflix o Instagram), aparece como otra diapositiva.
+- Al tocar el TITULO, precio o boton de compra se conserva el proceso
+  anterior. Desde la galeria tambien se puede continuar a la compra.
+- Se agrego una plantilla oculta llamada "Orientacion sobre descanso medico"
+  para asesorar sobre tramites y certificados legitimos. No incluye anuncios
+  que prometen descansos sin evaluacion ni capturas de certificados con
+  informacion clinica de una persona.
+- No se alteraron las reglas Firebase, los logins ni los pagos.
+
+MEJORAS ANTERIORES (FIX24)
+- BCP conserva primero la foto del cuy BCP y despues muestra la nueva
+  captura de pantalla de la app BCP facilitada por el usuario.
+- Interbank conserva primero el logo azul y verde, y despues muestra
+  la nueva captura de pantalla de la app Interbank.
+- Yape conserva primero la imagen anterior, y despues muestra la nueva
+  captura de pantalla de la app Yape.
+- DNI se puede anadir desde Administracion > Catalogo > DNI > Anadir.
+  Primero se muestra la imagen de DNI blanco y despues la imagen del DNI
+  celeste; ya vienen con datos personales difuminados. El servicio de
+  orientacion sobre tramites legales queda oculto hasta que lo configures.
+- Cada cambio de imagen ocurre tras unos 3 segundos de visibilidad, con
+  transicion suave. Se usan imagenes WebP comprimidas fuera del codigo.
+- No se modificaron el login, las reglas Firestore ni los datos de clientes.
+
+MEJORAS ANTERIORES (FIX23)
+- Nueva plantilla Lemon en Administracion > Catalogo > Lemon > Anadir.
+  Se crea como borrador OCULTO. En Editar debes configurar precio,
+  enlace HTTPS, acceso y publicacion antes de venderla.
+- Lemon primero muestra la imagen del logo verde y, tras unos 3 segundos
+  visible, cambia suavemente a la imagen de la aplicacion en el celular.
+  Ambas son archivos WebP separados y comprimidos.
+- La foto del cuy BCP reemplaza la imagen anterior de BCP en el catalogo.
+- El nuevo logo verde y azul reemplaza la imagen anterior de Interbank.
+- No se modificaron los registros existentes, contrasenas, aprobacion,
+  reglas Firestore ni otros videos y animaciones.
+- Para que el acceso de Lemon quede vinculado a una app real, esa app debe
+  admitir el contrato de cuentas SONYER o tener su propia integracion.
+
+MEJORAS ANTERIORES (FIX22)
+- Incluye la foto y video de seguidores de Instagram enviados por el usuario,
+  optimizados por separado en assets/ (WebP + MP4). Primero aparece la foto;
+  tras aproximadamente 3 segundos visible, se reproduce el video silenciado.
+- En Administracion > Catalogo hay un boton para anadir la plantilla
+  "Seguidores de Instagram". Se agrega oculta para evitar ventas sin precio
+  y detalles configurados. Pulsa Editar y configura precio, descripcion y
+  opcion de publicacion. El modo inicial es consulta por mensaje.
+- En Agregar/Editar producto se mantiene el desplegable "Categoria" y
+  ahora hay un campo para ESCRIBIR O EDITAR una categoria personalizada.
+  Al guardar, los compradores veran ese nombre y podran filtrarlo en
+  una categoria nueva que se muestra solo si tiene productos publicados.
+- No se modificaron el login, las reglas de Firestore ni la aprobacion.
+
+MEJORAS ANTERIORES (FIX21)
+- El carrusel de los mas populares avanza solo cada pocos segundos.
+  Se quitaron las flechas; sigue siendo posible deslizar lateralmente.
+  Cuando una persona toca o desplaza la zona, la reproduccion automatica
+  se pausa temporalmente. Respetamos el ajuste de movimiento reducido.
+- Imagen de ChatGPT y logo de Netflix incluidos como archivos WebP
+  independientes, y el video de Netflix como MP4 externo y comprimido.
+- La tarjeta de Netflix muestra primero su imagen. A los 3 segundos de
+  estar visible, reproduce silenciosamente el video en el mismo espacio.
+  Si el navegador impide la reproduccion automatica, mantiene la imagen.
+- En Administracion > Catalogo aparece "ChatGPT y Netflix > Añadir".
+  Esta accion los guarda como BORRADORES NO PUBLICADOS; para que aparezcan
+  a los compradores, abre Editar, configura URL HTTPS y precio correcto,
+  activa "Mostrar este servicio en el catalogo publico" y guarda.
+- Las nuevas apps aun deben integrar el contrato de cuentas SONYER para
+  que una compra aprobada pueda utilizarse en el login de cada servicio.
+- No se modificaron las reglas Firebase, el sistema de pedidos o el
+  mecanismo de aprobacion de cuentas.
+
+MEJORAS ANTERIORES (FIX20)
+- Quitada la capa de check tenue / marca de agua que quedaba por detras
+  de la animacion Lottie. El archivo JSON del check sigue en bucle.
+- Flechas de anterior/siguiente para el carrusel de populares; tambien
+  permite arrastrar lateralmente con el dedo.
+- Nuevo icono de ayuda (?) en la cabecera: abre una pantalla completa
+  para explicar los 5 pasos de la compra, incluyendo ID vendedor SONYER.
+- Logo dorado SONYER STORE proporcionado por el usuario, guardado como
+  assets/sonyer-logo.webp fuera del HTML para reducir el peso.
+- En el panel de administrador hay 4 secciones: Catalogo, Actividad,
+  Pedidos y Ajustes. Las solicitudes usan tarjetas compactas.
+- Nuevo aspecto ordenado de Configuracion y seguimiento de compra.
+- El formulario de ingreso al administrador cuenta hasta 3 intentos
+  incorrectos en el MISMO NAVEGADOR y pausa el formulario una hora.
+  ATENCION: esta limitacion se basa en localStorage y no es un bloqueo
+  de seguridad valido entre dispositivos o navegadores distintos. Para
+  proteger el login del servidor necesitas mecanismos de Firebase Auth
+  y un backend de comprobacion / bloqueo por cuenta.
+- Tras una aprobacion REAL, se muestra "Abrir aplicacion" solo cuando
+  existe URL HTTPS configurada. En "Mis compras" queda disponible el
+  enlace incluso al volver a abrir la web, siempre que se conserve el
+  historial del navegador. Las credenciales siguen sin guardarse alli.
+- Los archivos de Firebase y sus reglas se conservan, igual que el
+  sistema de creacion de cuentas, registro de compra y espera.
+
+MEJORAS ANTERIORES (FIX19)
+- Mensajes de verificacion de compra durante la espera, sin prometer una
+  aprobacion antes de que exista confirmacion del pago.
+- El check JSON se repite mientras esta visible y el confeti aparece al abrir
+  el comprobante de aprobacion. Ambos tienen archivos independientes.
+- El nombre del pagador se pide como aparece en la billetera o banco usado;
+  el comprador NO tiene que pagar necesariamente desde Moni.
+- Los servicios mas populares aparecen destacados segun corazones y
+  visualizaciones reales registradas (sin cifras inventadas).
+- Logos de WhatsApp y Telegram e imagenes nuevas de Free Fire y TikTok,
+  guardados por separado en assets.
+- Los productos de ejemplo sin configurar se ocultan del catalogo publico,
+  pero permanecen en el panel de administracion para editarlos.
+- En Editar producto puedes marcar/desmarcar 'Mostrar este servicio en el
+  catalogo publico'. Al ocultar un acceso y pulsar Guardar, su precio queda
+  desactivado al sincronizarse con Firebase.
+- El administrador puede agregar comentarios eligiendo una aplicacion y
+  escribiendo el texto. Se firman claramente como 'SONYER', no como opiniones
+  supuestamente verificadas de compradores. Solo el administrador los publica.
+- Se conserva la correccion de productos antiguos y el diagnostico de Firebase.
+
+UNICA CONFIGURACION INICIAL DEL SISTEMA
+1. Guarda una copia de las reglas actuales de Firestore y prueba todo en un
+   proyecto aislado antes de modificar el proyecto con usuarios existentes.
+2. Revisa y publica las reglas completas en firestore-SONYER.rules. La nueva
+   coleccion sonyer_store_apps debe estar protegida para escritura solo del
+   propietario; este archivo mantiene las reglas anteriores para el resto
+   de apps y, por ello, NO es seguro para produccion (ver abajo).
+3. Sube los archivos de la web, inicia sesion como administrador y pulsa
+   Sincronizar para publicar los productos y registrar las apps actuales.
+4. Actualiza PagoCheck usando el proyecto Android nuevo y vuelve a conectar
+   al administrador si el dispositivo no conserva la sesion.
+
+PARA AGREGAR OTRA APP DESPUES
+1. Abre SONYER Store > Panel > Agregar producto.
+2. Selecciona Comprar acceso con registro.
+3. En Codigo de aplicacion, usa Yape, BCP, interbank, FREFIRE, TIKTOK o un
+   codigo NUEVO con letras y numeros como NUEVAAPP. Escribe el precio y el
+   enlace HTTPS, y guarda.
+4. El panel registra la app en sonyer_store_apps y el precio en
+   sonyer_store_prices. Los pedidos llevan el codigo a PagoCheck.
+5. NO necesitas editar de nuevo las reglas ni el Java para AÑADIR el codigo.
+   Sin embargo, la app nueva DEBE conocer el contrato estandar de login
+   descrito abajo para que su pantalla de ingreso reconozca la cuenta.
+
+CONTRATO ESTANDAR DE CUENTAS SONYER V1 (para apps futuras)
+- Proyecto Firebase: login-48d79.
+- Cada cuenta se guarda en users/{FirebaseAuth.uid}.
+- Campos: app (CODIGO), appSource (codigo en minusculas), authUid,
+  sellerId (MAYUSCULAS), loginUsername (minusculas), username,
+  approved=false hasta autorizacion, approvalStatus='pending'.
+- Nombre interno: codigo_en_minusculas + '_' + loginUsername.
+- Correo Auth interno: codigo_en_minusculas + '.' + slug(sellerId) + '.' +
+  slug(loginUsername) + '.' + hashFNV1a8hex(CODIGO+'|'+sellerId+'|'+
+  loginUsername) + '@users.login-48d79.test'.
+- La app verifica Auth y el documento users/{uid}; cuando approved=true
+  permite entrar. Nunca debe confiar solo en un estado visual local.
+- Yape, BCP e Interbank conservan SUS formatos anteriores.
+- Free Fire y TikTok tienen excepciones conocidas: fuente y prefijo propios.
+  Su lectura real debe probarse con una cuenta de prueba de cada app.
+
+SEGURIDAD - LEE ANTES DE COBRAR
+- Estas reglas mantienen por compatibilidad permisos ABIERTOS para otras
+  colecciones del mismo proyecto, incluyendo users y sellers. Eso permite
+  que terceros alteren aprobaciones; no da proteccion de cobros reales.
+- PagoCheck solo detecta coincidencias de avisos MONI por nombre, importe y
+  tiempo. NO comprueba realmente que el dinero haya llegado a tu cuenta.
+- Antes de activar accesos de pago reales: proteger users/sellers con reglas
+  compatibles, probar los logins antiguos y usar verificacion autorizada de
+  pagos o aprobacion manual confirmada por el titular.
+- No se ha conectado a tu Firebase, ni publicado la web, ni compilado la APK
+  por ti. Todo debe probarse en tu dispositivo y hosting.
